@@ -1,30 +1,36 @@
-from flask import Flask, render_template, request, jsonify
 import openai
 
-app = Flask(__name__)
+# Configuration de la clé
+openai.api_key = 'key'
 
-# Configuration key
-openai.api_key = 'CLE_API_OPENAI'
-
-# chemin home
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-# chemin messages
-@app.route('/chat', methods=['POST'])
-def chat():
-    user_message = request.form['user_message']
-
-    # OpenAI gpt-3.5 réponse
-    response = openai.Completion.create(
+def obtenir_sites_touristiques(ville):
+    
+    prompt = f"Quels sont les sites touristiques à visiter à {ville} ?"
+    response = openai.chat.Completion.create(
         engine="text-davinci-003",
-        prompt=user_message,
+        prompt=prompt,
         max_tokens=100
     )
+    return response.choices[0].text.strip()
 
-    return jsonify({'response': response.choices[0].text.strip()})
+def main():
+    print("Bienvenue dans le chatbot des sites touristiques !")
+    while True:
+        ville = input("Vous désirez visiter les sites touristiques de quelle ville ? (tapez 'exit' pour quitter) ")
+        if ville.lower() == 'exit':
+            print("Au revoir !")
+            break
+        else:
+            try:
+                sites_touristiques = obtenir_sites_touristiques(ville)
+                print(f"Voici les sites touristiques à visiter à {ville}:")
+                print(sites_touristiques)
+            except Exception as e:
+                print("Une erreur s'est produite lors de la récupération des sites touristiques.")
+                print("Veuillez réessayer ou contacter l'administrateur.")
+                print("Erreur:", str(e))
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    main()
+
 
